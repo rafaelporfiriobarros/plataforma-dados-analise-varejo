@@ -1,0 +1,8 @@
+FROM apache/airflow:3.0.6
+
+COPY pyproject.toml /tmp/pyproject.toml
+
+RUN pip install --no-cache-dir \
+    pandas \
+    psycopg[binary] \
+    python-dotenv

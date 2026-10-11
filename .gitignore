@@ -1,0 +1,36 @@
+# Variáveis de ambiente e credenciais
+.env
+.env.*
+!.env.example
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Logs
+logs/
+*.log
+
+# Arquivos locais
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Dados sensíveis e arquivos gerados
+data/raw/
+data/bronze/
+data/silver/
+data/gold/
+*.db
+*.duckdb
+
+# Arquivos de backup
+*.bak
+*.backup
+*.dump

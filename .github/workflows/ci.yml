@@ -1,0 +1,39 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install pandas python-dotenv "psycopg[binary]" pytest ruff
+      - run: ruff check src tests
+      - run: PYTHONPATH=src pytest -q
+      - run: PYTHONPATH=src python -m mercado_analytics.pipeline
+  postgres-integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env: {POSTGRES_DB: mercado_analytics, POSTGRES_USER: postgres, POSTGRES_PASSWORD: postgres}
+        ports: ["5434:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d mercado_analytics"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DB_HOST: localhost
+      DB_PORT: 5434
+      DB_NAME: mercado_analytics
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      LOAD_TO_POSTGRES: "true"
+      INCREMENTAL_LOAD: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install pandas python-dotenv "psycopg[binary]"
+      - run: PYTHONPATH=src python run_pipeline.py
+      - run: PYTHONPATH=src python run_pipeline.py
+      - run: PGPASSWORD=postgres psql -h localhost -U postgres -d mercado_analytics -c "SELECT status, count(*) FROM audit.pipeline_runs GROUP BY status;"
